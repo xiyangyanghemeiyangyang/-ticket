@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -11,16 +11,27 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 }
 
 export default function App() {
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
+  const location = useLocation();
+  const onAuthPages = location.pathname === '/login' || location.pathname === '/register';
   return (
     <div className="min-h-screen bg-grayNeutral">
       <header className="border-b bg-white">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-4">
           <Link to="/" className="text-primary font-semibold">Tickets</Link>
           <nav className="ml-auto flex gap-3 text-sm">
-            <Link className="hover:underline" to="/login">登录</Link>
-            <Link className="hover:underline" to="/register">注册</Link>
-            <Link className="hover:underline" to="/profile">个人中心</Link>
-            <Link className="hover:underline" to="/trains">车次管理</Link>
+            {!isAuthenticated && (
+              <>
+                {!onAuthPages && <Link className="hover:underline" to="/login">登录</Link>}
+                {!onAuthPages && <Link className="hover:underline" to="/register">注册</Link>}
+              </>
+            )}
+            {isAuthenticated && !onAuthPages && (
+              <>
+                <Link className="hover:underline" to="/profile">个人中心</Link>
+                <Link className="hover:underline" to="/trains">车次管理</Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
