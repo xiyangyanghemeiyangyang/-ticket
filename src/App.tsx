@@ -2,7 +2,8 @@ import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
-import TrainsPage from './pages/TrainsPage';
+import TrainDetailPage from './pages/TrainDetailPage';
+import TicketSearchPage from './pages/TicketSearchPage';
 import { useAppSelector } from './store/hooks';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -29,7 +30,7 @@ export default function App() {
             {isAuthenticated && !onAuthPages && (
               <>
                 <Link className="hover:underline" to="/profile">个人中心</Link>
-                <Link className="hover:underline" to="/trains">车次管理</Link>
+                <Link className="hover:underline" to="/tickets">购票查询</Link>
               </>
             )}
           </nav>
@@ -49,10 +50,18 @@ export default function App() {
             }
           />
           <Route
-            path="/trains"
+            path="/tickets"
             element={
               <ProtectedRoute>
-                <TrainsPage />
+                <TicketSearchPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tickets/:id"
+            element={
+              <ProtectedRoute>
+                <TrainDetailPage />
               </ProtectedRoute>
             }
           />

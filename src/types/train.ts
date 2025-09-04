@@ -9,6 +9,7 @@ export type SeatClass =
 export interface SeatAvailability {
   className: SeatClass;
   remaining: number;
+  price?: number; // 单价（元）
 }
 
 export interface StationStop {

@@ -20,10 +20,10 @@ const MOCK_TRAINS: TrainDetail[] = [
       { code: 'SHHQ', name: '上海虹桥', arrivalTime: '12:38', departureTime: '-' },
     ],
     seats: [
-      { className: '商务座', remaining: 5 },
-      { className: '一等座', remaining: 21 },
-      { className: '二等座', remaining: 64 },
-      { className: '无座', remaining: 0 },
+      { className: '商务座', remaining: 5, price: 1748 },
+      { className: '一等座', remaining: 21, price: 933 },
+      { className: '二等座', remaining: 64, price: 553 },
+      { className: '无座', remaining: 0, price: 553 },
     ],
   },
   {
@@ -42,9 +42,9 @@ const MOCK_TRAINS: TrainDetail[] = [
       { code: 'XA', name: '西安', arrivalTime: '07:57', departureTime: '-' },
     ],
     seats: [
-      { className: '硬座', remaining: 112 },
-      { className: '硬卧', remaining: 37 },
-      { className: '无座', remaining: 18 },
+      { className: '硬座', remaining: 112, price: 156 },
+      { className: '硬卧', remaining: 37, price: 268 },
+      { className: '无座', remaining: 18, price: 156 },
     ],
   },
 ];
@@ -56,6 +56,10 @@ export async function listTrains(): Promise<TrainItem[]> {
 export async function getTrainDetail(id: string): Promise<TrainDetail | null> {
   const found = MOCK_TRAINS.find((t) => t.id === id) || null;
   return found ? JSON.parse(JSON.stringify(found)) : null; // deep clone to avoid accidental mutation
+}
+
+export async function getAllTrainDetails(): Promise<TrainDetail[]> {
+  return JSON.parse(JSON.stringify(MOCK_TRAINS));
 }
 
 
