@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import TrainsPage from './pages/TrainsPage';
 import { useAppSelector } from './store/hooks';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -19,6 +20,7 @@ export default function App() {
             <Link className="hover:underline" to="/login">登录</Link>
             <Link className="hover:underline" to="/register">注册</Link>
             <Link className="hover:underline" to="/profile">个人中心</Link>
+            <Link className="hover:underline" to="/trains">车次管理</Link>
           </nav>
         </div>
       </header>
@@ -32,6 +34,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/trains"
+            element={
+              <ProtectedRoute>
+                <TrainsPage />
               </ProtectedRoute>
             }
           />

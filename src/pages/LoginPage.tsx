@@ -16,7 +16,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/profile', { replace: true });
+      navigate('/trains', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -25,9 +25,12 @@ export function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    await dispatch(loginThunk({ account: account.trim(), password })).unwrap().then(() => {
-      navigate('/profile');
-    }).catch(() => {});
+    await dispatch(loginThunk({ account: account.trim(), password }))
+      .unwrap()
+      .then(() => {
+        navigate('/trains');
+      })
+      .catch(() => {});
   };
 
   return (

@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 } as const;
 
 const registerSchema = z.object({
-  phoneNumber: z.string().min(6),
+  phoneNumber: z.string().min(11),
   password: z.string().min(6),
   name: z.string().min(1),
 });
