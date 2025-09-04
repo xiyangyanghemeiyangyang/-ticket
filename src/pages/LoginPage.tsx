@@ -16,7 +16,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/trains', { replace: true });
+      navigate('/tickets', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -28,7 +28,7 @@ export function LoginPage() {
     await dispatch(loginThunk({ account: account.trim(), password }))
       .unwrap()
       .then(() => {
-        navigate('/trains');
+        navigate('/tickets');
       })
       .catch(() => {});
   };

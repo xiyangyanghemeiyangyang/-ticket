@@ -12,7 +12,7 @@ export function RegisterPage() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (isAuthenticated) navigate('/trains', { replace: true });
+    if (isAuthenticated) navigate('/tickets', { replace: true });
   }, [isAuthenticated, navigate]);
 
   const canSubmit = useMemo(
@@ -24,7 +24,7 @@ export function RegisterPage() {
     e.preventDefault();
     if (!canSubmit) return;
     await dispatch(registerThunk({ name: name.trim(), phoneNumber: phoneNumber.trim(), password })).unwrap()
-      .then(() => navigate('/trains'))
+      .then(() => navigate('/tickets'))
       .catch(() => {});
   };
 
