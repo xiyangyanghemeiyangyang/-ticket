@@ -1,4 +1,4 @@
-import type { TrainDetail, TrainItem, SeatAvailability, SeatClass, StationStop } from '../types/train';
+import type { TrainDetail, TrainItem } from '../types/train';
 
 const MOCK_TRAINS: TrainDetail[] = [
   {
@@ -55,11 +55,40 @@ export async function listTrains(): Promise<TrainItem[]> {
 
 export async function getTrainDetail(id: string): Promise<TrainDetail | null> {
   const found = MOCK_TRAINS.find((t) => t.id === id) || null;
-  return found ? JSON.parse(JSON.stringify(found)) : null; // deep clone to avoid accidental mutation
+  if (!found) return null;
+  const detail: TrainDetail = JSON.parse(JSON.stringify(found));
+  const invRaw = localStorage.getItem('app_inventory');
+  if (invRaw) {
+    const inv = JSON.parse(invRaw) as Record<string, Record<string, number>>;
+    const map = inv[id];
+    if (map) {
+      detail.seats = detail.seats.map((s) => ({ ...s, remaining: map[s.className] ?? s.remaining }));
+    }
+  }
+  return detail;
 }
 
 export async function getAllTrainDetails(): Promise<TrainDetail[]> {
-  return JSON.parse(JSON.stringify(MOCK_TRAINS));
+  const ids = MOCK_TRAINS.map((t) => t.id);
+  const list: TrainDetail[] = [];
+  for (const id of ids) {
+    const d = await getTrainDetail(id);
+    if (d) list.push(d);
+  }
+  return list;
+}
+
+export async function adjustSeatRemaining(trainId: string, seatClass: string, delta: number): Promise<void> {
+  const current = await getTrainDetail(trainId);
+  if (!current) throw new Error('车次不存在');
+  const seat = current.seats.find((s) => s.className === seatClass);
+  if (!seat) throw new Error('席别不存在');
+  const next = Math.max(0, (seat.remaining ?? 0) + delta);
+  const invRaw = localStorage.getItem('app_inventory');
+  const inv = invRaw ? (JSON.parse(invRaw) as Record<string, Record<string, number>>) : {};
+  inv[trainId] = inv[trainId] || {};
+  inv[trainId][seatClass] = next;
+  localStorage.setItem('app_inventory', JSON.stringify(inv));
 }
 
 

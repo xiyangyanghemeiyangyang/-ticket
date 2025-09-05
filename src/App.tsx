@@ -4,6 +4,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import TrainDetailPage from './pages/TrainDetailPage';
 import TicketSearchPage from './pages/TicketSearchPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import { useAppSelector } from './store/hooks';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
@@ -62,6 +63,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TrainDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute>
+                <OrderDetailPage />
               </ProtectedRoute>
             }
           />

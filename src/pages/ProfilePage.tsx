@@ -5,6 +5,10 @@ import { logoutThunk } from '../store/slices/authSlice';
 import { setProfile } from '../store/slices/userSlice';
 import { getCurrentUser } from '../api/auth';
 import { updateProfileThunk, verifyThunk } from '../store/slices/userSlice';
+import { addPassenger, listPassengers, removePassenger } from '../api/passengers';
+import { listOrders } from '../api/orders';
+import type { OrderItem } from '../types/order';
+import type { Passenger } from '../types/order';
 
 export function ProfilePage() {
   const dispatch = useAppDispatch();
@@ -15,6 +19,10 @@ export function ProfilePage() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [identityNumber, setIdentityNumber] = useState('');
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [pName, setPName] = useState('');
+  const [pId, setPId] = useState('');
+  const [orders, setOrders] = useState<OrderItem[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -24,6 +32,10 @@ export function ProfilePage() {
       } else {
         dispatch(setProfile(auth.currentUser));
       }
+      const ps = await listPassengers();
+      setPassengers(ps);
+      const os = await listOrders();
+      setOrders(os);
     })();
   }, [auth.currentUser, dispatch]);
 
@@ -52,6 +64,20 @@ export function ProfilePage() {
   const onLogout = async () => {
     await dispatch(logoutThunk());
     navigate('/login');
+  };
+
+  const onAddPassenger = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pName.trim() || !pId.trim()) return;
+    const created = await addPassenger({ name: pName.trim(), identityNumber: pId.trim() });
+    setPassengers((prev) => [created, ...prev]);
+    setPName('');
+    setPId('');
+  };
+
+  const onRemovePassenger = async (id: string) => {
+    await removePassenger(id);
+    setPassengers((prev) => prev.filter((p) => p.id !== id));
   };
 
   if (!user.profile) {
@@ -88,6 +114,52 @@ export function ProfilePage() {
         {user.error && <div className="text-red-600 text-sm">{user.error}</div>}
         <button type="submit" disabled={!canSave || user.loading} className="bg-primary text-white rounded-md px-4 py-2 disabled:opacity-60">保存</button>
       </form>
+
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-3">乘车人管理</h2>
+        <form onSubmit={onAddPassenger} className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <input className="border rounded-md px-3 py-2" placeholder="姓名" value={pName} onChange={(e) => setPName(e.target.value)} />
+          <input className="border rounded-md px-3 py-2" placeholder="身份证号" value={pId} onChange={(e) => setPId(e.target.value)} />
+          <button type="submit" className="bg-primary text-white rounded-md px-4 py-2">添加</button>
+        </form>
+        {passengers.length === 0 ? (
+          <div className="text-sm text-gray-600">暂无乘车人</div>
+        ) : (
+          <div className="border rounded-md divide-y">
+            {passengers.map((p) => (
+              <div key={p.id} className="px-3 py-2 text-sm flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{p.name}</div>
+                  <div className="text-gray-600">{p.identityNumber}</div>
+                </div>
+                <button onClick={() => onRemovePassenger(p.id)} className="text-red-600 text-xs">删除</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-3">历史订单</h2>
+        {orders.length === 0 ? (
+          <div className="text-sm text-gray-600">暂无订单</div>
+        ) : (
+          <div className="border rounded-md divide-y">
+            {orders.map((o) => (
+              <span key={o.id} onClick={() => navigate(`/orders/${o.id}`)} className="block px-3 py-2 text-sm hover:bg-grayNeutral rounded cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium">{o.trainNo} · {o.seatClass}</div>
+                  <div className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleString()}</div>
+                </div>
+                <div className="text-gray-700 mt-1">
+                  订单号：{o.id} · 乘客数：{o.passengerIds.length} · 金额：¥{o.totalPrice}
+                </div>
+                <div className="text-xs mt-1">状态：{o.status}</div>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
