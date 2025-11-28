@@ -5,7 +5,8 @@ const STORAGE_KEYS = {
   USERS: 'app_users',
   TOKEN: 'app_token',
   CURRENT_USER_ID: 'app_current_user_id',
-} as const;
+  TOKEN_EXPIRES_AT: 'app_token_expires_at',//过期时间
+} as const;//作为loacalStorage的Key保存。
 
 const registerSchema = z.object({
   phoneNumber: z.string().min(11),
@@ -24,16 +25,40 @@ type LoginInput = z.infer<typeof loginSchema>;
 function readUsers(): Record<string, UserProfile & { password: string }> {
   const raw = localStorage.getItem(STORAGE_KEYS.USERS);
   return raw ? JSON.parse(raw) : {};
-}
+}//模拟数据库
 
 function writeUsers(users: Record<string, UserProfile & { password: string }>): void {
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-}
+}//模拟数据库
 
 function generateId(): string {
-  return 'u_' + Math.random().toString(36).slice(2, 10);
+  if(typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return 'u_' + crypto.randomUUID();
+  }else{
+    console.warn('%c浏览器不支持crypto.randomUUID，使用Math.random()生成ID', 'color: orange; font-weight: bold; font-size: 12px;');
+    return 'u_' + Math.random().toString(36).slice(2, 10);
+  }
+  // return 'u_' + Math.random().toString(36).slice(2, 10);
+}//唯一token
+
+function setAuth(token: string, userId: string, expiresInM =  24 * 60 * 60 * 1000){
+  const expiration = Date.now() + expiresInM;
+  localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+  localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, userId);
+  localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES_AT, expiration.toString());
 }
 
+export function isLoggedIn(): boolean {
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const expiresAt = localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+
+  if (!token || !expiresAt) return false;
+  if (Date.now() > Number(expiresAt)) {
+    logout();
+    return false;
+  }
+  return true;
+}//新增的判断是否过期的逻辑
 export async function register(input: RegisterInput): Promise<{ token: string; user: UserProfile }>
 {
   const data = registerSchema.parse(input);
@@ -41,7 +66,7 @@ export async function register(input: RegisterInput): Promise<{ token: string; u
   const exists = Object.values(users).some((u) => u.phoneNumber === data.phoneNumber);
   if (exists) {
     throw new Error('该手机号已注册');
-  }
+  }//regist logic
   const id = generateId();
   const user: UserProfile & { password: string } = {
     id,
@@ -54,8 +79,9 @@ export async function register(input: RegisterInput): Promise<{ token: string; u
   users[id] = user;
   writeUsers(users);
   const token = 't_' + Math.random().toString(36).slice(2);
-  localStorage.setItem(STORAGE_KEYS.TOKEN, token);
-  localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, id);
+  // localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+  // localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, id);
+  setAuth(token, id, 30 * 60 * 1000);
   return { token, user };
 }
 

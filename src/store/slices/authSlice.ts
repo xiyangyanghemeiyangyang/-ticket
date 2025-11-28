@@ -1,3 +1,4 @@
+//逻辑存储
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AuthState } from '../../types/user';
 import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister } from '../../api/auth';
@@ -19,7 +20,7 @@ export const registerThunk = createAsyncThunk(
 
 export const loginThunk = createAsyncThunk(
   'auth/login',
-  async (payload: { account: string; password: string }) => {
+  async (payload: { account: string; password: string }) => {//显式定义输入参数
     return apiLogin(payload);
   }
 );
@@ -37,7 +38,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {},
-  extraReducers: (builder) => {
+  extraReducers: (builder) => {//处理action
     builder
       .addCase(registerThunk.pending, (state) => {
         state.loading = true;
